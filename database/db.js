@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const mlab = require('../config.js');
 // This could also be || if config doesnt exist;
 
-mongoose.connect(mlab.mlabdb.mlab)
+mongoose.connect(`mongodb://localhost/recipetest`)
   .then(
     () => { console.log('mongoose connected'); },
     (err) => { console.log('DB connection error: ', err); },
@@ -14,11 +14,14 @@ mongoose.connect(mlab.mlabdb.mlab)
  * mongoose userSchema
  */
 const userSchema = new Schema({
-  googleId: String,
+  googleId: String, 
+  //googleToken: String,
   facebookId: String,
+  //facebookToken: String, 
   username: String,
   savedRecipes: Array,
   intolerances: { type: String, default: 'egg, peanut' },
+  //Develop Pseudo Query for editing intolerances 
   createdAt: Date,
   updatedAt: { type: Date, default: Date.now },
 });

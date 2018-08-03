@@ -22,8 +22,10 @@ import ModalLoginForm from './login.js';
 import SearchApiForm from './searchApi.jsx';
 import RecipesList from './recipes.js';
 import RecipeDetails from './RecipeDetails';
+import ZipPieChart from './zipPieChart.js'
 import MealView from './mealView.js';
 import data from './data.js';
+import dummyData from './../dummyData.js';
 import $ from 'jquery';
 
 /*HEADING*/
@@ -274,7 +276,10 @@ class HomepageLayout extends Component {
       recipeIngredients: [],
       calories:'',
       image:'',
-      calorie:''
+      calorie:'',
+      zipcodeData: dummyData,
+      zipcode: '',
+      view: ''
     }
 
     // this.handleDemoClick = this.handleDemoClick.bind(this);
@@ -286,6 +291,9 @@ class HomepageLayout extends Component {
     this.closeMeal = this.closeMeal.bind(this);
     this.getRecipes = this.getRecipes.bind(this);
     this.getRecipe = this.getRecipe.bind(this);
+    this.setToZip = this.setToZip.bind(this);
+    this.openZipModal = this.openZipModal.bind(this);
+    this.updateZipcode = this.updateZipcode.bind(this);
   }
 
   close(){
@@ -377,6 +385,51 @@ class HomepageLayout extends Component {
     });
   }
 
+  getZipcodeData (path, param, e) {
+    e.preventDefault();
+    axios.get(path, {params: param})
+    .then(({data}) => {
+      console.log('what are the fav cuisines', data);
+      //depends if there is a table with that zipcode in db
+        //if not then return some sort of message
+      //also check structure of data
+      if (data.zipcodeData !== undefined) {
+        this.setState({
+          zipcodeData: data.zipcodeData
+        })
+        //now the favorite cuisines info is ready to be passed to the popup modal to show to user as a pie chart
+      }
+    })
+    .catch((err) => {
+      console.log('error...could not get top favs by zip', err.response.data)
+    });
+  }
+
+   setToZip (e) {
+    e.preventDefault();
+    this.setState({
+        view: 'zip'
+    });
+    console.log('is zip showing', this.state.view)
+  }
+
+  openZipModal() {
+    if (this.state.view === 'zip') {
+      console.log('show the zip fav')
+      return (
+        <ZipPieChart data={this.state.zipcodeData}/>
+        )
+    }
+  }
+
+  updateZipcode (event) {
+    const previousZipcode = this.state.zipcode;
+
+    this.setState({
+      zipcode: event.target.value
+    })
+  }
+
   render () {
     return (
     <ResponsiveContainer demoTest={this.state.data}>
@@ -386,11 +439,18 @@ class HomepageLayout extends Component {
           <Grid.Row >
           <Grid.Column >
             <SearchApiForm className="call-to-action"
-              getRecipes={this.getRecipes} openModal = {this.open}
-            openMeal = {this.openMeal}/>
+              getRecipes={this.getRecipes}
+              openModal = {this.open}
+              openMeal = {this.openMeal}
+              getZipcodeData={this.getZipcodeData}
+              updateZipcode={this.updateZipcode}
+              setToZip={this.setToZip}/>
             <RecipesList recipes={this.state.recipes} open={this.state.open} openDetails={this.openDetails} close={this.close} getRecipe={this.getRecipe} />
             <RecipeDetails calories={this.state.calories} recipe={this.state.recipeSteps} ingredients={this.state.recipeIngredients} image={this.state.image} open={this.state.openDetails} close={this.closeDetails}/>
             <MealView recipes = {this.state.recipes} open={this.state.openMeal} close={this.closeMeal} getRecipe={this.getRecipe} openDetails={this.openDetails}/>
+             <div className="openZipModal">
+              {this.openZipModal()}
+            </div>
           </Grid.Column>
           </Grid.Row>
         </Grid>
